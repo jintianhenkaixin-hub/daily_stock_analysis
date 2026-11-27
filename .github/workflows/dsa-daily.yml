@@ -58,8 +58,6 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_BASE_URL: 'https://api.deepseek.com'
           OPENAI_MODEL: 'deepseek-chat'
-          WECHAT_WEBHOOK_URL: ${{ secrets.WECHAT_WEBHOOK_URL }}
-          WECHAT_MSG_TYPE: markdown
           MARKET_REVIEW_REGION: cn
           MARKET_REVIEW_COLOR_SCHEME: red_up
           MARKET_REVIEW_ENABLED: 'true'
@@ -72,12 +70,13 @@ jobs:
             FORCE_RUN_ARG="--force-run"
           fi
           echo "自选股: $STOCK_LIST"
+          # 不配置任何推送渠道：仅生成报告文件，报告在工作流运行页的 Artifacts 中下载
           if [ "$MODE" = "market-only" ]; then
-            python main.py --market-review $FORCE_RUN_ARG
+            python main.py --market-review --no-notify $FORCE_RUN_ARG
           elif [ "$MODE" = "stocks-only" ]; then
-            python main.py --no-market-review $FORCE_RUN_ARG
+            python main.py --no-market-review --no-notify $FORCE_RUN_ARG
           else
-            python main.py $FORCE_RUN_ARG
+            python main.py --no-notify $FORCE_RUN_ARG
           fi
 
       - name: 上传分析报告
