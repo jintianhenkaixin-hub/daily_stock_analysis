@@ -7,46 +7,18 @@ jobs:
   diagnose:
     runs-on: ubuntu-latest
     steps:
-      - name: 诊断百炼密钥与模型
+      - name: 诊断百炼可用模型
         env:
           DASHSCOPE_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          echo "=== Key 基本信息（脱敏） ==="
-          LEN=${#DASHSCOPE_API_KEY}
-          echo "key_length=$LEN"
-          echo "key_prefix=${DASHSCOPE_API_KEY:0:6}...${DASHSCOPE_API_KEY: -4}"
-
-          for BASE in \
-            "https://dashscope.aliyuncs.com/compatible-mode/v1" \
-            "https://cn-beijing.maas.aliyuncs.com/compatible-mode/v1"; do
-            echo ""
-            echo "========== BASE=$BASE =========="
-            echo "--- GET /models ---"
-            curl -sS -o /tmp/models.json -w "models_http=%{http_code}\n" \
-              "$BASE/models" -H "Authorization: Bearer $DASHSCOPE_API_KEY"
-            python3 -c "
-          import json
-          try:
-              d=json.load(open('/tmp/models.json'))
-              if 'data' in d:
-                  names=[m['id'] for m in d['data']]
-                  print('model_count=',len(names))
-                  print('models=',names[:60])
-              else:
-                  print('models_resp=',str(d)[:500])
-          except Exception as e:
-              print('parse_err=',e, open('/tmp/models.json').read()[:300])
-          "
-          done
-
-          echo ""
-          echo "=== 测试 chat/completions（dashscope 老地址，候选模型）==="
           BASE="https://dashscope.aliyuncs.com/compatible-mode/v1"
-          for M in deepseek-v3 deepseek-r1 qwen-plus qwen3.8-max qwen-turbo; do
+          echo "=== 测试 chat/completions（候选模型）==="
+          for M in qwen3.8-flash qwen-plus deepseek-v4.1-flash deepseek-v4-flash-0731 qwen3.8-max; do
             CODE=$(curl -sS -o /tmp/chat_resp.json -w "%{http_code}" \
               -X POST "$BASE/chat/completions" \
               -H "Authorization: Bearer $DASHSCOPE_API_KEY" \
               -H "Content-Type: application/json" \
               -d "{\"model\":\"$M\",\"messages\":[{\"role\":\"user\",\"content\":\"ping\"}],\"max_tokens\":5}")
-            echo "model=$M http=$CODE resp=$(python3 -c "import json;d=json.load(open('/tmp/chat_resp.json'));print(str(d.get('error',{}).get('message','OK'))[:150])" 2>/dev/null)"
+            MSG=$(python3 -c "import json;d=json.load(open('/tmp/chat_resp.json'));print(str(d.get('error',{}).get('message','OK'))[:150])" 2>/dev/null)
+            echo "model=$M http=$CODE resp=$MSG"
           done
