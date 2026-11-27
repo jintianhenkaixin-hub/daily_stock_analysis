@@ -56,8 +56,8 @@ jobs:
           STOCK_LIST: '600519,300750,002594'
           STOCK_LIST_CONFIG: '600519,300750,002594'
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_BASE_URL: 'https://api.deepseek.com'
-          OPENAI_MODEL: 'deepseek-chat'
+          OPENAI_BASE_URL: 'https://dashscope.aliyuncs.com/compatible-mode/v1'
+          OPENAI_MODEL: 'qwen-plus'
           MARKET_REVIEW_REGION: cn
           MARKET_REVIEW_COLOR_SCHEME: red_up
           MARKET_REVIEW_ENABLED: 'true'
